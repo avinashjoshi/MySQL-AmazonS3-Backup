@@ -55,6 +55,17 @@ If you do not prefer exporting / storing the environment variable, use the follo
 $ env MBTS_MYSQL_USERNAME="db_user" MBTS_MYSQL_PASSWORD="mysql" MBTS_S3_BUCKET="s3://bucketName" ./mysqlBackupToS3.sh
 ```
 
+# Retention
+The optional `MBTS_BACKUPS_RETAIN` environment variable determines number of backups to be retained in Amazon S3 bucket. This makes it possible to have monthly, weekly & daily backups as such:
+#### Retain 7 daily backups
+```
+$ env MBTS_MYSQL_USERNAME="db_user" MBTS_MYSQL_PASSWORD="mysql" MBTS_BACKUPS_RETAIN=7 MBTS_S3_BUCKET="s3://bucketName/daily" ./mysqlBackupToS3.sh
+```
+#### Retain 1 monthly backup
+```
+$ env MBTS_MYSQL_USERNAME="db_user" MBTS_MYSQL_PASSWORD="mysql" MBTS_BACKUPS_RETAIN=1 MBTS_S3_BUCKET="s3://bucketName/monthly" ./mysqlBackupToS3.sh
+```
+_Please not that the number of files retained includes the lastest backup_
 
 # Recommendations
 1. Run the script daily - add the following lines to your `crontab`:
