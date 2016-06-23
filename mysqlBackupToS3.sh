@@ -31,7 +31,6 @@ fi
 printf "Dumping to \e[1;32m$MBTS_S3_BUCKET/$stamp/\e[00m\n"
 
 for db in $MBTS_MYSQL_DATABASES; do
-
   filename="$stamp - $db.sql.gz"
   tmpfile="/tmp/$filename"
   object="$MBTS_S3_BUCKET/$stamp/$filename"
@@ -53,8 +52,21 @@ for db in $MBTS_MYSQL_DATABASES; do
   else
     printf "  \e[0;35mdatabase does not exist!\e[00m\n"
   fi
+done
 
-done;
+# Cleanup old backups
+if [[ ! -z "$MBTS_BACKUPS_RETAIN" ]]; then
+  printf "Cleaning up old backups... \e[1;32mRetaining ONLY $MBTS_BACKUPS_RETAIN backups\e[00m\n"
+  backups=`aws s3 $profileOption ls "$MBTS_S3_BUCKET/" | sed -n -e :a -e "1,$MBTS_BACKUPS_RETAIN!{P;N;D;};N;ba" | tr -d "PRE" | sed -e 's/^[[:space:]]*//' | tr " " "_"`
+  if [[ ! -z "$backups" ]]; then
+    for backup in $backups; do
+      folder=`echo $backup | tr "_" " "`
+      printf "  Deleting \e[0;35m$folder...\e[00m\n"
+      aws s3 $profileOption rm --quiet --recursive "$MBTS_S3_BUCKET/$folder"
+    done
+  else
+    printf "  Nothing to delete\n"
+  fi
+fi
 
-# Jobs a goodun
-printf "\e[1;32mJobs a goodun\e[00m\n"
+printf "\e[1;32mDONE!\e[00m\n"
